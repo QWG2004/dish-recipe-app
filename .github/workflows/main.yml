@@ -10,14 +10,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 17
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: Create settings.gradle
+        run: |
+          echo "rootProject.name = 'dish-recipe-app'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+          echo "pluginManagement {" >> build.gradle
+          echo "    repositories {" >> build.gradle
+          echo "        google()" >> build.gradle
+          echo "        mavenCentral()" >> build.gradle
+          echo "    }" >> build.gradle
+          echo "}" >> build.gradle
+          echo "plugins {" >> build.gradle
+          echo "    id 'com.android.application' version '8.2.0' apply false" >> build.gradle
+          echo "}" >> build.gradle
+
+      - name: Create or update app/build.gradle
+        run: |
+          echo "plugins {" > app/build.gradle
+          echo "    id 'com.android.application'" >> app/build.gradle
+          echo "}" >> app/build.gradle
+          echo "android {" >> app/build.gradle
+          echo "    namespace 'com.example.dishrecipeapp'" >> app/build.gradle
+          echo "    compileSdk 34" >> app/build.gradle
+          echo "    defaultConfig {" >> app/build.gradle
+          echo "        applicationId 'com.example.dishrecipeapp'" >> app/build.gradle
+          echo "        minSdk 24" >> app/build.gradle
+          echo "        targetSdk 34" >> app/build.gradle
+          echo "        versionCode 1" >> app/build.gradle
+          echo "        versionName '1.0'" >> app/build.gradle
+          echo "    }" >> app/build.gradle
+          echo "    buildTypes {" >> app/build.gradle
+          echo "        release {" >> app/build.gradle
+          echo "            minifyEnabled false" >> app/build.gradle
+          echo "        }" >> app/build.gradle
+          echo "    }" >> app/build.gradle
+          echo "    compileOptions {" >> app/build.gradle
+          echo "        sourceCompatibility JavaVersion.VERSION_17" >> app/build.gradle
+          echo "        targetCompatibility JavaVersion.VERSION_17" >> app/build.gradle
+          echo "    }" >> app/build.gradle
+          echo "}" >> app/build.gradle
+          echo "dependencies {" >> app/build.gradle
+          echo "}" >> app/build.gradle
 
       - name: Build with Gradle
         run: gradle assembleDebug
