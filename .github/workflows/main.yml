@@ -47,6 +47,7 @@ jobs:
 
       - name: Create or update app/build.gradle
         run: |
+          mkdir -p app  # 自动创建 app 文件夹，防止报错
           echo "plugins {" > app/build.gradle
           echo "    id 'com.android.application'" >> app/build.gradle
           echo "}" >> app/build.gradle
